@@ -1,0 +1,40 @@
+
+name: Cap nhat gia vang
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-gold:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Tai repository
+        uses: actions/checkout@v4
+
+      - name: Cai Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Lay gia vang
+        env:
+          GOLD_API_KEY: ${{ secrets.GOLD_API_KEY }}
+        run: python update_gold.py
+
+      - name: Luu thay doi
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gia-vang.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update gold prices"
+            git push
+          else
+            echo "Khong co thay doi du lieu."
+          fi
